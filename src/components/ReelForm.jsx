@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { saveReel } from "../db";
 
 const ReelForm = ({ setReels }) => {
   const [url, setUrl] = useState("");
@@ -10,8 +9,7 @@ const ReelForm = ({ setReels }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newReel = { url, title, tags: tags.split(","), collection };
-    await saveReel(newReel); // Save to IndexedDB
-    setReels((prev) => [...prev, newReel]); // Update local state
+    setReels(newReel); // Pass the new Reel to the parent component
     setUrl("");
     setTitle("");
     setTags("");

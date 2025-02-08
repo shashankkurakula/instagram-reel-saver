@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
-import SearchBar from "./components/SearchBar";
 import Modal from "./components/Modal";
-import { getReels } from "./db";
+import { getReels, saveReel } from "./db";
 import "./styles.css";
 import { FaSearch, FaPlus } from "react-icons/fa";
 
@@ -23,9 +22,10 @@ const App = () => {
     loadReels();
   }, []);
 
-  const handleAddReel = (newReel) => {
-    setReels((prev) => [...prev, newReel]);
-    setIsModalOpen(false);
+  const handleAddReel = async (newReel) => {
+    await saveReel(newReel); // Save to IndexedDB
+    setReels((prev) => [...prev, newReel]); // Update local state
+    setIsModalOpen(false); // Close the modal
   };
 
   return (
