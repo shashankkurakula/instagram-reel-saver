@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 const ReelCard = ({ reel, setReels }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const handleDelete = async () => {
     await deleteReel(reel.id); // Delete from IndexedDB
     setReels((prev) => prev.filter((r) => r.id !== reel.id)); // Update local state
@@ -20,16 +22,22 @@ const ReelCard = ({ reel, setReels }) => {
 
   return (
     <div className="reel-card">
-      <iframe
-        src={`https://www.instagram.com/reel/${reelId}/embed`}
-        title={reel.title}
-        width="100%"
-        height="500"
-        frameBorder="0"
-        scrolling="no"
-        allowTransparency="true"
-        style={{ aspectRatio: "9 / 16" }} // Maintain aspect ratio
-      ></iframe>
+      <div
+        className="reel-iframe-container"
+        style={{ backgroundColor: isPlaying ? "#000" : "transparent" }}
+      >
+        <iframe
+          src={`https://www.instagram.com/reel/${reelId}/embed`}
+          title={reel.title}
+          width="100%"
+          height="500"
+          frameBorder="0"
+          scrolling="no"
+          allowTransparency="true"
+          style={{ aspectRatio: "9 / 16" }}
+          onLoad={() => setIsPlaying(true)} // Hide thumbnail when Reel starts playing
+        ></iframe>
+      </div>
       <h3>{reel.title}</h3>
       <p>Tags: {reel.tags.join(", ")}</p>
       <p>Collection: {reel.collection}</p>
