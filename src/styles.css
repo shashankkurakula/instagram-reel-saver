@@ -26,13 +26,15 @@ body {
   border-radius: 25px;
   padding: 5px 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 300px;
 }
 
 .search-bar {
   border: none;
   outline: none;
   padding: 8px;
-  width: 200px;
+  width: 100%;
   font-size: 14px;
 }
 
@@ -102,7 +104,8 @@ body {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
-  width: 300px;
+  width: 90%;
+  max-width: 300px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -140,4 +143,25 @@ body {
   text-align: center;
   font-size: 18px;
   color: #555;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-bar-container {
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .reel-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .reel-card iframe {
+    height: 200px;
+  }
 }
