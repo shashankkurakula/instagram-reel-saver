@@ -3,13 +3,16 @@ import { createRoot } from "react-dom/client";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import SearchBar from "./components/SearchBar";
+import Modal from "./components/Modal";
 import { getReels } from "./db";
 import "./styles.css";
+import { FaSearch, FaPlus } from "react-icons/fa";
 
 const App = () => {
   const [reels, setReels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const loadReels = async () => {
@@ -20,12 +23,37 @@ const App = () => {
     loadReels();
   }, []);
 
+  const handleAddReel = (newReel) => {
+    setReels((prev) => [...prev, newReel]);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="app-container">
-      <h1 className="title">Instagram Reel Saver</h1>
-      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <ReelForm setReels={setReels} />
-      {loading ? <p className="loading">Loading reels...</p> : <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />}
+      <div className="header">
+        <div className="search-bar-container">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search reels..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-bar"
+          />
+        </div>
+        <FaPlus className="add-icon" onClick={() => setIsModalOpen(true)} />
+      </div>
+
+      {loading ? (
+        <p className="loading">Loading reels...</p>
+      ) : (
+        <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />
+      )}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h2>Add New Reel</h2>
+        <ReelForm setReels={handleAddReel} />
+      </Modal>
     </div>
   );
 };
