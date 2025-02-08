@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createRoot } from "react-dom/client"; // Updated import for React 18
+import { createRoot } from "react-dom/client";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import SearchBar from "./components/SearchBar";
@@ -25,7 +25,7 @@ const App = () => {
       <h1 className="title">Instagram Reel Saver</h1>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <ReelForm setReels={setReels} />
-      {loading ? <p>Loading reels...</p> : <ReelList reels={reels} searchQuery={searchQuery} />}
+      {loading ? <p className="loading">Loading reels...</p> : <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />}
     </div>
   );
 };
