@@ -9,11 +9,13 @@ import "./styles.css";
 const App = () => {
   const [reels, setReels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReels = async () => {
       const savedReels = await getReels();
       setReels(savedReels);
+      setLoading(false);
     };
     loadReels();
   }, []);
@@ -23,7 +25,7 @@ const App = () => {
       <h1 className="title">Instagram Reel Saver</h1>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <ReelForm setReels={setReels} />
-      <ReelList reels={reels} searchQuery={searchQuery} />
+      {loading ? <p>Loading reels...</p> : <ReelList reels={reels} searchQuery={searchQuery} />}
     </div>
   );
 };
