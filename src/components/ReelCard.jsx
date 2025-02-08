@@ -1,5 +1,4 @@
 import React from "react";
-import { deleteReel } from "../db";
 
 const ReelCard = ({ reel, setReels }) => {
   const handleDelete = async () => {
@@ -25,10 +24,11 @@ const ReelCard = ({ reel, setReels }) => {
         src={`https://www.instagram.com/reel/${reelId}/embed`}
         title={reel.title}
         width="100%"
-        height="400"
+        height="500"
         frameBorder="0"
         scrolling="no"
         allowTransparency="true"
+        style={{ aspectRatio: "9 / 16" }} // Maintain aspect ratio
       ></iframe>
       <h3>{reel.title}</h3>
       <p>Tags: {reel.tags.join(", ")}</p>
