@@ -1,8 +1,17 @@
 import React from "react";
 
 const ReelCard = ({ reel }) => {
-  // Extract the Reel ID from the URL
-  const reelId = reel.url.split("/reel/")[1].split("/")[0];
+  let reelId = "";
+  try {
+    reelId = reel.url.split("/reel/")[1].split("/")[0];
+  } catch (error) {
+    console.error("Invalid Reel URL:", reel.url);
+    return (
+      <div className="reel-card">
+        <p>Invalid Reel URL. Please check the link.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="reel-card">
