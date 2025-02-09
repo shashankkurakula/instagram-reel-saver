@@ -39,21 +39,83 @@ body {
   font-size: 14px;
 }
 
-.add-icon {
+/* 🔄 Refresh Button */
+.refresh-icon {
   cursor: pointer;
-  font-size: 20px; /* Slightly larger icon */
+  font-size: 20px;
+  margin-left: 10px;
   color: #555;
   background-color: #fff;
   border-radius: 50%;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0; /* Prevent shrinking */
-  width: 25px; /* Fixed width */
-  height: 25px; /* Fixed height */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: transform 0.2s;
 }
+.refresh-icon:hover {
+  transform: scale(1.1);
+}
+
+/* 👤 Profile Button */
+.profile-icon {
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 10px;
+  color: #555;
+  background-color: #fff;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+.profile-icon:hover {
+  transform: scale(1.1);
+}
+
+/* 📌 Floating Save (+) Button */
+.add-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #fff;
+  background-color: #007bff;
+  border-radius: 50%;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 999; /* ✅ Ensures it's above all content */
+  transition: transform 0.2s;
+}
+.add-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Profile Modal Buttons */
+.profile-btn, .logout-btn {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.profile-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+.logout-btn {
+  background-color: #ff4d4d;
+  color: #fff;
+}
+.profile-btn:hover {
+  background-color: #0056b3;
+}
+.logout-btn:hover {
+  background-color: #ff1a1a;
+}
+
+
 
 /* Reel Grid Styles */
 .reel-list {
