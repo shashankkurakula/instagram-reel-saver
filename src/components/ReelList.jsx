@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
 
 const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received from parent
   const [loading, setLoading] = useState(true);
@@ -67,31 +68,43 @@ const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received 
   }, []);
 
   return (
-    <div className="reel-list">
-      {loading ? (
-        <p>Loading reels...</p>
-      ) : reels.length === 0 ? (
-        <p>No reels found.</p>
-      ) : (
-        reels.map((reel) => (
-          <div key={reel.id} className="reel-card">
-            <iframe
-              src={`https://www.instagram.com/reel/${reel.url.split("/reel/")[1].split("/")[0]}/embed`}
-              title={reel.title}
-              width="100%"
-              height="150"
-              frameBorder="0"
-              scrolling="no"
-            ></iframe>
-            <h3>{reel.title}</h3>
-            <p>Collection: {reel.collections?.name || "None"}</p>
-            <p>Tags: {Array.isArray(reel.tags) && reel.tags.length > 0 ? reel.tags.join(", ") : "No Tags"}</p> 
-          </div>
-        ))
-      )}
-    </div>
+    <Box sx={{ padding: 2 }}>
+      <Grid container spacing={3} justifyContent="center">
+        {reels.length === 0 ? (
+          <Typography variant="h6" sx={{ textAlign: "center", width: "100%", mt: 3 }}>
+            No reels found.
+          </Typography>
+        ) : (
+          reels.map((reel) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={reel.id}>
+              <Card sx={{ maxWidth: 350, boxShadow: 3 }}>
+                {/* ✅ Check if reel.url exists before rendering iframe */}
+                {reel.url && reel.url.includes("/reel/") ? (
+                  <iframe
+                    src={`https://www.instagram.com/reel/${reel.url.split("/reel/")[1]?.split("/")[0]}/embed`}
+                    title={reel.title}
+                    width="100%"
+                    height="180"
+                    frameBorder="0"
+                    scrolling="no"
+                    style={{ borderRadius: "8px" }}
+                  ></iframe>
+                ) : (
+                  <Typography color="error" sx={{ padding: 2 }}>Loading Reel...</Typography> // ✅ Temporary message while waiting
+                )}
+                <CardContent>
+                  <Typography variant="h6">{reel.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Collection: {reel.collections?.name || "None"}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        )}
+      </Grid>
+    </Box>
   );
-  
 };
 
 export default ReelList;

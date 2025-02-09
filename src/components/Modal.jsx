@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const Modal = ({ isOpen, onClose, children }) => {
   const modalRef = useRef(null); // ✅ Reference for modal
@@ -24,11 +26,22 @@ const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" ref={modalRef}>
-        {children}
-      </div>
-    </div>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>{children}</DialogContent>
+    </Dialog>
   );
 };
 
