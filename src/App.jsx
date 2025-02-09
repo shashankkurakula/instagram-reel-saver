@@ -5,25 +5,21 @@ import Auth from "./components/Auth";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import Modal from "./components/Modal";
-import { FaSearch, FaPlus, FaRedo, FaUser } from "react-icons/fa"; // 🔄 Refresh & 👤 Profile icons
-import "./styles.css";
+import { AppBar, Toolbar, Typography, IconButton, Container, Box, CircularProgress } from "@mui/material";
+import { Search, Add, Refresh, AccountCircle } from "@mui/icons-material";
 
 const App = () => {
-  const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [reels, setReels] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // ✅ Fetch session and user on mount
   useEffect(() => {
     const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.user) {
         setUser(data.session.user);
-        setSession(data.session);
       }
     };
 
@@ -34,7 +30,7 @@ const App = () => {
         setUser(session.user);
       } else {
         setUser(null);
-        setReels([]); // ✅ Clear reels on logout
+        setReels([]);
       }
     });
 
@@ -43,7 +39,6 @@ const App = () => {
     };
   }, []);
 
-  // ✅ Fetch reels immediately after login
   useEffect(() => {
     const fetchReels = async () => {
       if (!user) return;
@@ -63,13 +58,12 @@ const App = () => {
     };
 
     fetchReels();
-  }, [user]); // ✅ Runs when `user` changes (on login)
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setSession(null);
-    setReels([]); // ✅ Clear reels on logout
+    setReels([]);
     setIsProfileModalOpen(false);
   };
 
@@ -78,41 +72,54 @@ const App = () => {
   }
 
   return (
-    <div className="app-container">
-      <div className="header">
-        <div className="search-bar-container">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search reels..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-bar"
-          />
-        </div>
-        <FaRedo className="refresh-icon" onClick={() => setReels([]) || setUser(user)} title="Refresh" />
-        <FaUser className="profile-icon" onClick={() => setIsProfileModalOpen(true)} title="Profile" />
-      </div>
+    <Box>
+      {/* Header with Search, Refresh, Profile */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Reel Organizer
+          </Typography>
+          <IconButton color="inherit">
+            <Search />
+          </IconButton>
+          <IconButton color="inherit" onClick={() => setReels([...reels])}>
+            <Refresh />
+          </IconButton>
+          <IconButton color="inherit" onClick={() => setIsProfileModalOpen(true)}>
+            <AccountCircle />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
 
-      {loading ? (
-        <p className="loading">Loading reels...</p>
-      ) : (
-        <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />
-      )}
+      <Container sx={{ mt: 4 }}>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <ReelList reels={reels} setReels={setReels} />
+        )}
+      </Container>
 
-      <FaPlus className="add-icon" onClick={() => setIsModalOpen(true)} />
+      <IconButton
+        color="primary"
+        sx={{ position: "fixed", bottom: 20, right: 20, backgroundColor: "blue", color: "white" }}
+        onClick={() => setIsModalOpen(true)}
+      >
+        <Add />
+      </IconButton>
 
+      {/* Add Reel Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2>Add New Reel</h2>
         <ReelForm setReels={setReels} closeModal={() => setIsModalOpen(false)} />
       </Modal>
 
+      {/* Profile Modal */}
       <Modal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)}>
-        <h2>Profile</h2>
-        <button className="profile-btn" onClick={() => alert("Profile feature coming soon!")}>Profile</button>
-        <button className="logout-btn" onClick={handleLogout}>Logout</button>
+        <Typography variant="h6">Profile</Typography>
+        <button onClick={handleLogout}>Logout</button>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

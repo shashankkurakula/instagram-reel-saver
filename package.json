@@ -12,6 +12,10 @@
     "vite": "^6.1.0"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.3",
+    "@mui/material": "^6.4.3",
     "@supabase/supabase-js": "^2.48.1",
     "@vitejs/plugin-react": "^4.3.4",
     "idb": "^8.0.2",
