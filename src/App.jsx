@@ -5,9 +5,8 @@ import Auth from "./components/Auth";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import Modal from "./components/Modal";
-import { getReels } from "./db";
-import "./styles.css";
 import { FaSearch, FaPlus, FaRedo, FaUser } from "react-icons/fa"; // 🔄 Refresh & 👤 Profile icons
+import "./styles.css";
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -16,8 +15,9 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // 👤 Profile modal
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // ✅ Fetch session and user on mount
   useEffect(() => {
     const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -34,6 +34,7 @@ const App = () => {
         setUser(session.user);
       } else {
         setUser(null);
+        setReels([]); // ✅ Clear reels on logout
       }
     });
 
@@ -42,24 +43,34 @@ const App = () => {
     };
   }, []);
 
-  const fetchReels = async () => {
-    setLoading(true);
-    const savedReels = await getReels();
-    setReels(savedReels);
-    setLoading(false);
-  };
-
+  // ✅ Fetch reels immediately after login
   useEffect(() => {
-    if (session) {
-      fetchReels();
-    }
-  }, [session]);
+    const fetchReels = async () => {
+      if (!user) return;
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("reels")
+        .select("*, collections(name)");
+
+      if (error) {
+        console.error("Error fetching reels:", error);
+      } else {
+        setReels(data || []);
+      }
+
+      setLoading(false);
+    };
+
+    fetchReels();
+  }, [user]); // ✅ Runs when `user` changes (on login)
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setIsProfileModalOpen(false); // ✅ Close profile modal on logout
+    setReels([]); // ✅ Clear reels on logout
+    setIsProfileModalOpen(false);
   };
 
   if (!user) {
@@ -68,7 +79,6 @@ const App = () => {
 
   return (
     <div className="app-container">
-      {/* 🔍 Search, 🔄 Refresh, 👤 Profile Row */}
       <div className="header">
         <div className="search-bar-container">
           <FaSearch className="search-icon" />
@@ -80,8 +90,8 @@ const App = () => {
             className="search-bar"
           />
         </div>
-        <FaRedo className="refresh-icon" onClick={fetchReels} title="Refresh" /> {/* 🔄 Refresh Button */}
-        <FaUser className="profile-icon" onClick={() => setIsProfileModalOpen(true)} title="Profile" /> {/* 👤 Profile Button */}
+        <FaRedo className="refresh-icon" onClick={() => setReels([]) || setUser(user)} title="Refresh" />
+        <FaUser className="profile-icon" onClick={() => setIsProfileModalOpen(true)} title="Profile" />
       </div>
 
       {loading ? (
@@ -90,16 +100,13 @@ const App = () => {
         <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />
       )}
 
-      {/* 📌 Floating Add Reel Button */}
       <FaPlus className="add-icon" onClick={() => setIsModalOpen(true)} />
 
-      {/* 📌 Add Reel Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Add New Reel</h2>
         <ReelForm setReels={setReels} closeModal={() => setIsModalOpen(false)} />
       </Modal>
 
-      {/* 👤 Profile Modal */}
       <Modal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)}>
         <h2>Profile</h2>
         <button className="profile-btn" onClick={() => alert("Profile feature coming soon!")}>Profile</button>
