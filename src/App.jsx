@@ -5,12 +5,14 @@ import Auth from "./components/Auth";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import Modal from "./components/Modal";
-import { AppBar, Toolbar, Typography, IconButton, Container, Box, CircularProgress } from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton, Container, Box, CircularProgress, TextField } from "@mui/material";
 import { Search, Add, Refresh, AccountCircle } from "@mui/icons-material";
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [allReels, setAllReels] = useState([]); // ✅ Store all reels for filtering
   const [reels, setReels] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -30,6 +32,7 @@ const App = () => {
         setUser(session.user);
       } else {
         setUser(null);
+        setAllReels([]);
         setReels([]);
       }
     });
@@ -50,7 +53,8 @@ const App = () => {
     if (error) {
       console.error("Error fetching reels:", error);
     } else {
-      setReels(data || []);
+      setAllReels(data || []); // ✅ Store all reels for filtering
+      setReels(data || []); // ✅ Initially display all reels
     }
 
     setLoading(false);
@@ -60,15 +64,28 @@ const App = () => {
     if (user) {
       fetchReels();
     }
-  }, [user]); // ✅ Runs on user login
+  }, [user]);
+
+  // ✅ Search function to filter reels dynamically
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setReels(allReels);
+    } else {
+      const filteredReels = allReels.filter((reel) =>
+        reel.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setReels(filteredReels);
+    }
+  }, [searchQuery, allReels]);
 
   const handleReload = () => {
-    fetchReels(); // ✅ Re-fetch reels from Supabase
+    fetchReels();
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setAllReels([]);
     setReels([]);
     setIsProfileModalOpen(false);
   };
@@ -85,10 +102,15 @@ const App = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Reel Organizer
           </Typography>
-          <IconButton color="inherit">
-            <Search />
-          </IconButton>
-          <IconButton color="inherit" onClick={handleReload}> {/* ✅ Fix Refresh Button */}
+          <TextField
+            variant="outlined"
+            placeholder="Search reels..."
+            size="small"
+            sx={{ bgcolor: "white", borderRadius: 1, mr: 2 }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <IconButton color="inherit" onClick={handleReload}>
             <Refresh />
           </IconButton>
           <IconButton color="inherit" onClick={() => setIsProfileModalOpen(true)}>
