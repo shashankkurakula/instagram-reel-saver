@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
-const ReelForm = ({ setReels }) => {
+const ReelForm = ({ setReels, closeModal }) => { // ✅ Accept `closeModal` prop to close modal
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState([]); // ✅ Always initialized as an array
@@ -67,7 +67,27 @@ const ReelForm = ({ setReels }) => {
     }
     const user = userData.user;
 
-    let collection_id = selectedCollection;
+    let collection_id = selectedCollection || null;
+
+    // **🔹 Check if the reel already exists before inserting**
+    const { data: existingReel, error: checkError } = await supabase
+      .from("reels")
+      .select("id")
+      .eq("url", url)
+      .eq("user_id", user.id)
+      .single();
+
+    if (existingReel) {
+      alert("This reel has already been saved.");
+      setLoading(false);
+      return;
+    }
+
+    if (checkError && checkError.code !== "PGRST116") {
+      console.error("Error checking existing reel:", checkError);
+      setLoading(false);
+      return;
+    }
 
     // If user entered a new collection, create it
     if (newCollection.trim()) {
@@ -115,7 +135,7 @@ const ReelForm = ({ setReels }) => {
     const { data: newReel, error: reelError } = await supabase
       .from("reels")
       .insert([{ url, title, collection_id, user_id: user.id }])
-      .select("id")
+      .select("id, url, title, collection_id")
       .single();
 
     if (reelError) {
@@ -130,8 +150,8 @@ const ReelForm = ({ setReels }) => {
       await supabase.from("reel_tags").insert([{ reel_id: newReel.id, tag_id }]);
     }
 
-    setReels((prev) => [...prev, newReel]);
-    alert("Reel saved successfully!");
+    setReels((prev) => [newReel, ...prev]); // ✅ Update UI instantly
+    closeModal(); // ✅ Close modal automatically after saving
     setLoading(false);
   };
 

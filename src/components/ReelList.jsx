@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
-const ReelList = () => {
-  const [reels, setReels] = useState([]);
+const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received from parent
   const [loading, setLoading] = useState(true);
 
   const fetchReels = async () => {
@@ -53,12 +52,12 @@ const ReelList = () => {
   useEffect(() => {
     fetchReels(); // Fetch reels initially
 
-    // Subscribe to real-time updates for new reels
+    // Subscribe to real-time updates
     const subscription = supabase
       .channel("reels")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "reels" }, (payload) => {
         console.log("New reel detected:", payload.new);
-        fetchReels(); // ✅ Fetch reels again when a new reel is added
+        setReels((prevReels) => [payload.new, ...prevReels]); // ✅ Update UI instantly
       })
       .subscribe();
 
@@ -86,12 +85,13 @@ const ReelList = () => {
             ></iframe>
             <h3>{reel.title}</h3>
             <p>Collection: {reel.collections?.name || "None"}</p>
-            <p>Tags: {reel.tags.length > 0 ? reel.tags.join(", ") : "No Tags"}</p>
+            <p>Tags: {Array.isArray(reel.tags) && reel.tags.length > 0 ? reel.tags.join(", ") : "No Tags"}</p> 
           </div>
         ))
       )}
     </div>
   );
+  
 };
 
 export default ReelList;

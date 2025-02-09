@@ -11,18 +11,17 @@ import { FaSearch, FaPlus } from "react-icons/fa";
 
 const App = () => {
   const [session, setSession] = useState(null);
-  const [user, setUser] = useState(null); // ✅ Make sure setUser exists
+  const [user, setUser] = useState(null);
   const [reels, setReels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Check for a session on component mount
   useEffect(() => {
     const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.user) {
-        setUser(data.session.user); // ✅ Set user state
+        setUser(data.session.user);
         setSession(data.session);
       }
     };
@@ -31,9 +30,9 @@ const App = () => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser(session.user); // ✅ Update user state on login
+        setUser(session.user);
       } else {
-        setUser(null); // ✅ Remove user on logout
+        setUser(null);
       }
     });
 
@@ -42,7 +41,6 @@ const App = () => {
     };
   }, []);
 
-  // Load reels when the session is available
   useEffect(() => {
     if (session) {
       const loadReels = async () => {
@@ -54,9 +52,8 @@ const App = () => {
     }
   }, [session]);
 
-  // If there's no session, show the Auth component
   if (!user) {
-    return <Auth setUser={setUser} />; // ✅ Pass setUser to Auth
+    return <Auth setUser={setUser} />;
   }
 
   return (
@@ -78,18 +75,17 @@ const App = () => {
       {loading ? (
         <p className="loading">Loading reels...</p>
       ) : (
-        <ReelList reels={reels} searchQuery={searchQuery} setReels={setReels} />
+        <ReelList reels={reels} setReels={setReels} />
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Add New Reel</h2>
-        <ReelForm setReels={setReels} />
+        <ReelForm setReels={setReels} closeModal={() => setIsModalOpen(false)} />
       </Modal>
     </div>
   );
 };
 
-// Render the app using React 18's createRoot API
 const container = document.getElementById("root");
 const root = createRoot(container);
 root.render(<App />);
