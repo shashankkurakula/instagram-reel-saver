@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';       
 
-const supabaseUrl = 'https://bxuzukgspwmlifbpofwd.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dXp1a2dzcHdtbGlmYnBvZndkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkwNTk5NTcsImV4cCI6MjA1NDYzNTk1N30.ZTGoIlSKT13khUpbKPguWwQkw-TWK3nbOVhgRDdjfco';
+const supabaseUrl = 'https://foxvnthwsbizosttdwvf.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZveHZudGh3c2Jpem9zdHRkd3ZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkwNzAxNTYsImV4cCI6MjA1NDY0NjE1Nn0.VL20RO81l4tW9POuKI4GztwZSUPzj5HSztT8ZC36HUI';
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Fetch collections for the logged-in user

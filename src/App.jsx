@@ -1,41 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { supabase } from './supabaseClient';
+import { supabase } from "./supabaseClient";
 import Auth from "./components/Auth";
 import ReelForm from "./components/ReelForm";
 import ReelList from "./components/ReelList";
 import Modal from "./components/Modal";
-import { getReels, saveReel } from "./db";
+import { getReels } from "./db";
 import "./styles.css";
 import { FaSearch, FaPlus } from "react-icons/fa";
 
 const App = () => {
-  const [session, setSession] = useState(null); // Track the user session
-  const [reels, setReels] = useState([]); // Store reels
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
-  const [loading, setLoading] = useState(true); // Loading state
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null); // ✅ Make sure setUser exists
+  const [reels, setReels] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Check for a session on component mount
   useEffect(() => {
-    // Fetch the current session
     const fetchSession = async () => {
-      const { data: session } = await supabase.auth.getSession();
-      setSession(session);
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        setUser(data.session.user); // ✅ Set user state
+        setSession(data.session);
+      }
     };
 
     fetchSession();
 
-    // Listen for auth state changes (e.g., user logs in or out)
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      if (session?.user) {
+        setUser(session.user); // ✅ Update user state on login
+      } else {
+        setUser(null); // ✅ Remove user on logout
+      }
     });
 
-    // Cleanup the listener when the component unmounts
     return () => {
-      if (authListener && authListener.unsubscribe) {
-        authListener.unsubscribe();
-      }
+      authListener?.subscription.unsubscribe();
     };
   }, []);
 
@@ -49,20 +52,13 @@ const App = () => {
       };
       loadReels();
     }
-  }, [session]); // Only run this effect when the session changes
+  }, [session]);
 
-  const handleAddReel = async (newReel) => {
-    await saveReel(newReel); // Save to IndexedDB
-    setReels((prev) => [...prev, newReel]); // Update local state
-    setIsModalOpen(false); // Close the modal
-  };
-
-  // If there's no session, show the Auth component (login/signup)
-  if (!session) {
-    return <Auth />;
+  // If there's no session, show the Auth component
+  if (!user) {
+    return <Auth setUser={setUser} />; // ✅ Pass setUser to Auth
   }
 
-  // If there's a session, show the main app (ReelForm and ReelList)
   return (
     <div className="app-container">
       <div className="header">
@@ -87,7 +83,7 @@ const App = () => {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Add New Reel</h2>
-        <ReelForm setReels={handleAddReel} />
+        <ReelForm setReels={setReels} />
       </Modal>
     </div>
   );
