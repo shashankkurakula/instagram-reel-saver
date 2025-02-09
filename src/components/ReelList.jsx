@@ -1,24 +1,43 @@
-import React from "react";
-import ReelCard from "./ReelCard";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
 
-const ReelList = ({ reels, searchQuery, setReels }) => {
-  const filteredReels = reels.filter(
-    (reel) =>
-      reel.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reel.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  );
+const ReelList = () => {
+  const [reels, setReels] = useState([]);
+
+  useEffect(() => {
+    const fetchReels = async () => {
+      const { data: user } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('reels')
+        .select('*')
+        .eq('user_id', user.id);
+      if (error) {
+        alert(error.message);
+      } else {
+        setReels(data);
+      }
+    };
+    fetchReels();
+  }, []);
 
   return (
     <div className="reel-list">
-      {filteredReels.length === 0 ? (
-        <p>No reels found.</p>
-      ) : (
-        filteredReels.map((reel) => (
-          <ReelCard key={reel.id} reel={reel} setReels={setReels} />
-        ))
-      )}
+      {reels.map((reel) => (
+        <div key={reel.id} className="reel-card">
+          <iframe
+            src={`https://www.instagram.com/reel/${reel.url.split('/reel/')[1].split('/')[0]}/embed`}
+            title={reel.title}
+            width="100%"
+            height="150"
+            frameBorder="0"
+            scrolling="no"
+            allowTransparency="true"
+          ></iframe>
+          <h3>{reel.title}</h3>
+          <p>Tags: {reel.tags.join(', ')}</p>
+          <p>Collection: {reel.collection}</p>
+        </div>
+      ))}
     </div>
   );
 };
