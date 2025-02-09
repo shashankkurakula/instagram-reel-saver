@@ -39,26 +39,32 @@ const App = () => {
     };
   }, []);
 
+  const fetchReels = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("reels")
+      .select("*, collections(name)");
+
+    if (error) {
+      console.error("Error fetching reels:", error);
+    } else {
+      setReels(data || []);
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchReels = async () => {
-      if (!user) return;
-      setLoading(true);
+    if (user) {
+      fetchReels();
+    }
+  }, [user]); // ✅ Runs on user login
 
-      const { data, error } = await supabase
-        .from("reels")
-        .select("*, collections(name)");
-
-      if (error) {
-        console.error("Error fetching reels:", error);
-      } else {
-        setReels(data || []);
-      }
-
-      setLoading(false);
-    };
-
-    fetchReels();
-  }, [user]);
+  const handleReload = () => {
+    fetchReels(); // ✅ Re-fetch reels from Supabase
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -82,7 +88,7 @@ const App = () => {
           <IconButton color="inherit">
             <Search />
           </IconButton>
-          <IconButton color="inherit" onClick={() => setReels([...reels])}>
+          <IconButton color="inherit" onClick={handleReload}> {/* ✅ Fix Refresh Button */}
             <Refresh />
           </IconButton>
           <IconButton color="inherit" onClick={() => setIsProfileModalOpen(true)}>

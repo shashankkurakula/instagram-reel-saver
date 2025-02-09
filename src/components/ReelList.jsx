@@ -6,6 +6,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 const ReelList = ({ reels, setReels }) => {
   // ✅ Ensure setReels is received from parent
   const [loading, setLoading] = useState(true);
+
   const handleDelete = async (reelId) => {
     if (!window.confirm("Are you sure you want to delete this reel?")) return;
 
@@ -20,6 +21,7 @@ const ReelList = ({ reels, setReels }) => {
     // ✅ Remove deleted reel from UI
     setReels((prev) => prev.filter((reel) => reel.id !== reelId));
   };
+
   const fetchReels = async () => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
