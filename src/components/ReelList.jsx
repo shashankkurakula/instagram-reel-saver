@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
+import { Card, CardContent, Typography, Grid, Box, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received from parent
+const ReelList = ({ reels, setReels }) => {
+  // ✅ Ensure setReels is received from parent
   const [loading, setLoading] = useState(true);
+  const handleDelete = async (reelId) => {
+    if (!window.confirm("Are you sure you want to delete this reel?")) return;
 
+    const { error } = await supabase.from("reels").delete().eq("id", reelId);
+
+    if (error) {
+      console.error("Error deleting reel:", error);
+      alert("Failed to delete reel.");
+      return;
+    }
+
+    // ✅ Remove deleted reel from UI
+    setReels((prev) => prev.filter((reel) => reel.id !== reelId));
+  };
   const fetchReels = async () => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
@@ -56,10 +71,14 @@ const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received 
     // Subscribe to real-time updates
     const subscription = supabase
       .channel("reels")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reels" }, (payload) => {
-        console.log("New reel detected:", payload.new);
-        setReels((prevReels) => [payload.new, ...prevReels]); // ✅ Update UI instantly
-      })
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "reels" },
+        (payload) => {
+          console.log("New reel detected:", payload.new);
+          setReels((prevReels) => [payload.new, ...prevReels]); // ✅ Update UI instantly
+        }
+      )
       .subscribe();
 
     return () => {
@@ -77,8 +96,15 @@ const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received 
         ) : (
           reels.map((reel) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={reel.id}>
-              <Card sx={{ maxWidth: 350, boxShadow: 3 }}>
-                {/* ✅ Check if reel.url exists before rendering iframe */}
+              <Card sx={{ maxWidth: 350, boxShadow: 3, position: "relative" }}>
+                {/* Delete Button */}
+                <IconButton
+                  sx={{ position: "absolute", top: 5, right: 5, color: "red" }}
+                  onClick={() => handleDelete(reel.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+
                 {reel.url && reel.url.includes("/reel/") ? (
                   <iframe
                     src={`https://www.instagram.com/reel/${reel.url.split("/reel/")[1]?.split("/")[0]}/embed`}
@@ -90,7 +116,7 @@ const ReelList = ({ reels, setReels }) => {  // ✅ Ensure setReels is received 
                     style={{ borderRadius: "8px" }}
                   ></iframe>
                 ) : (
-                  <Typography color="error" sx={{ padding: 2 }}>Loading Reel...</Typography> // ✅ Temporary message while waiting
+                  <Typography color="error" sx={{ padding: 2 }}>Reel Not Available</Typography>
                 )}
                 <CardContent>
                   <Typography variant="h6">{reel.title}</Typography>
