@@ -76,35 +76,6 @@ const ReelForm = ({ setReels, closeModal }) => {
       return;
     }
 
-    // 🔹 Insert the new reel
-    const { data: insertedReel, error: insertError } = await supabase
-      .from("reels")
-      .insert([{ url, title, collection_id, user_id: userId }])
-      .select("id, url") // ✅ Ensure URL is immediately available
-      .single();
-
-    if (insertError) {
-      console.error("Error saving reel:", insertError);
-      alert(insertError.message);
-      setLoading(false);
-      return;
-    }
-
-    // 🔹 Fetch the full reel data (including collections)
-    const { data: fullReel, error: fetchError } = await supabase
-      .from("reels")
-      .select("id, url, title, collections(name)")
-      .eq("id", insertedReel.id)
-      .single();
-
-    if (fetchError) {
-      console.error("Error fetching full reel data:", fetchError);
-      alert("Reel saved but could not retrieve full details.");
-      setReels((prev) => [insertedReel, ...prev]); // ✅ Fallback to basic data
-    } else {
-      setReels((prev) => [fullReel, ...prev]); // ✅ Use full data with collections
-    }
-
     // 🔹 Create new collection if needed
     if (newCollection.trim()) {
       const { data: newCollectionData, error: collectionError } = await supabase
@@ -119,7 +90,7 @@ const ReelForm = ({ setReels, closeModal }) => {
         setLoading(false);
         return;
       }
-      collection_id = newCollectionData.id;
+      collection_id = newCollectionData.id; // ✅ Use newly created collection UUID
       setCollections((prev) => [...prev, newCollectionData]);
       setNewCollection("");
       setIsCreatingCollection(false);
@@ -145,6 +116,35 @@ const ReelForm = ({ setReels, closeModal }) => {
       setTags((prev) => [...prev, newTagData]);
       setNewTag("");
       setIsCreatingTag(false);
+    }
+
+    // 🔹 Insert the new reel
+    const { data: insertedReel, error: insertError } = await supabase
+      .from("reels")
+      .insert([{ url, title, collection_id: collection_id, user_id: userId }]) // ✅ Ensure collection_id is valid
+      .select("id, url")
+      .single();
+
+    if (insertError) {
+      console.error("Error saving reel:", insertError);
+      alert(insertError.message);
+      setLoading(false);
+      return;
+    }
+
+    // 🔹 Fetch the full reel data (including collections)
+    const { data: fullReel, error: fetchError } = await supabase
+      .from("reels")
+      .select("id, url, title, collections(name)")
+      .eq("id", insertedReel.id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching full reel data:", fetchError);
+      alert("Reel saved but could not retrieve full details.");
+      setReels((prev) => [insertedReel, ...prev]); // ✅ Fallback to basic data
+    } else {
+      setReels((prev) => [fullReel, ...prev]); // ✅ Use full data with collections
     }
 
     closeModal();
