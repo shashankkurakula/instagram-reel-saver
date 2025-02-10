@@ -27,7 +27,7 @@ export const getOrCreateTags = async (tagNames, userId) => {
     let { data: existingTag } = await supabase
       .from("tags")
       .select("id")
-      .eq("name", tagName.trim().toLowerCase()) // 🔹 Ensure case-insensitive matching
+      .eq("name", tagName.trim().toLowerCase())
       .eq("user_id", userId)
       .single();
 
@@ -52,7 +52,7 @@ export const getOrCreateTags = async (tagNames, userId) => {
   return tagIds;
 };
 
-// ✅ Insert a new reel and associate it with multiple tags
+// ✅ Insert reel and associate it with multiple tags
 export const insertReelWithTags = async (reel, tagNames) => {
   const { data: newReel, error: reelError } = await supabase
     .from("reels")
@@ -68,7 +68,9 @@ export const insertReelWithTags = async (reel, tagNames) => {
   const tagIds = await getOrCreateTags(tagNames, reel.user_id);
 
   for (const tagId of tagIds) {
-    await supabase.from("reel_tags").insert([{ reel_id: newReel.id, tag_id: tagId }]);
+    await supabase
+      .from("reel_tags")
+      .insert([{ reel_id: newReel.id, tag_id: tagId }]);
   }
 
   return newReel;
@@ -175,5 +177,8 @@ export const saveReel = async (reel, tagNames) => {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData?.user) throw new Error("User not logged in");
 
-  return await insertReelWithTags({ ...reel, user_id: userData.user.id }, tagNames);
+  return await insertReelWithTags(
+    { ...reel, user_id: userData.user.id },
+    tagNames
+  );
 };
