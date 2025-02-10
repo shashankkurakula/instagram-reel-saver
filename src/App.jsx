@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { supabase } from "./supabaseClient";
+import { supabase } from "./config/supabase";
 import Auth from "./components/Auth";
 import ReelForm from "./components/reels/ReelForm";
 import ReelList from "./components/reels/ReelList";
