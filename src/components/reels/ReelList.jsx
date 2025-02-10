@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { supabase } from "../../config/supabase";
 import { Card, CardContent, Typography, Grid, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -8,6 +8,7 @@ const ReelList = ({ reels, setReels }) => {
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState("date");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [sortedReels, setSortedReels] = useState([]); // ✅ Use separate state for sorted reels
 
   const handleDelete = async (reelId) => {
     if (!window.confirm("Are you sure you want to delete this reel?")) return;
@@ -84,24 +85,25 @@ const ReelList = ({ reels, setReels }) => {
     };
   }, []);
 
+  // ✅ Use `useMemo` instead of modifying `setReels` inside `useEffect`
   useEffect(() => {
-    let sortedReels = [...reels];
+    let sortedList = [...reels];
 
     switch (sortOption) {
       case "date":
-        sortedReels.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        sortedList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
       case "tag":
-        sortedReels.sort((a, b) => (a.tags?.[0] || "").localeCompare(b.tags?.[0] || ""));
+        sortedList.sort((a, b) => (a.tags?.[0] || "").localeCompare(b.tags?.[0] || ""));
         break;
       case "title":
-        sortedReels.sort((a, b) => a.title.localeCompare(b.title));
+        sortedList.sort((a, b) => a.title.localeCompare(b.title));
         break;
       default:
         break;
     }
 
-    setReels(sortedReels);
+    setSortedReels(sortedList); // ✅ Update only `sortedReels`, not `reels`
   }, [sortOption, reels]);
 
   return (
@@ -131,12 +133,12 @@ const ReelList = ({ reels, setReels }) => {
 
       {/* Reel Grid */}
       <Grid container spacing={3} justifyContent="center">
-        {reels.length === 0 ? (
+        {sortedReels.length === 0 ? (
           <Typography variant="h6" sx={{ textAlign: "center", width: "100%", mt: 3 }}>
             No reels found.
           </Typography>
         ) : (
-          reels.map((reel) => (
+          sortedReels.map((reel) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={reel.id}>
               <Card sx={{ maxWidth: 350, boxShadow: 3, position: "relative" }}>
                 <IconButton sx={{ position: "absolute", top: 5, right: 5, color: "red" }} onClick={() => handleDelete(reel.id)}>
