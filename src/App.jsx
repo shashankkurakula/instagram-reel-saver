@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { supabase } from "./supabaseClient";
 import Auth from "./components/Auth";
-import ReelForm from "./components/ReelForm";
-import ReelList from "./components/ReelList";
-import Modal from "./components/Modal";
-import { AppBar, Toolbar, Typography, IconButton, Container, Box, CircularProgress, TextField } from "@mui/material";
-import { Search, Add, Refresh, AccountCircle } from "@mui/icons-material";
+import ReelForm from "./components/reels/ReelForm";
+import ReelList from "./components/reels/ReelList";
+import Header from "./components/common/Header"; 
+import Modal from "./components/common/Modal";
+import ProfileModal from "./components/common/ProfileModal"; // ✅ Import new ProfileModal
+import { Box, Container, CircularProgress, IconButton } from "@mui/material";
+import { Add } from "@mui/icons-material";
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [allReels, setAllReels] = useState([]); // ✅ Store all reels for filtering
+  const [allReels, setAllReels] = useState([]);
   const [reels, setReels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,8 +55,8 @@ const App = () => {
     if (error) {
       console.error("Error fetching reels:", error);
     } else {
-      setAllReels(data || []); // ✅ Store all reels for filtering
-      setReels(data || []); // ✅ Initially display all reels
+      setAllReels(data || []);
+      setReels(data || []);
     }
 
     setLoading(false);
@@ -66,7 +68,6 @@ const App = () => {
     }
   }, [user]);
 
-  // ✅ Search function to filter reels dynamically
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setReels(allReels);
@@ -96,28 +97,13 @@ const App = () => {
 
   return (
     <Box>
-      {/* Header with Search, Refresh, Profile */}
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Reel Organizer
-          </Typography>
-          <TextField
-            variant="outlined"
-            placeholder="Search reels..."
-            size="small"
-            sx={{ bgcolor: "white", borderRadius: 1, mr: 2 }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <IconButton color="inherit" onClick={handleReload}>
-            <Refresh />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => setIsProfileModalOpen(true)}>
-            <AccountCircle />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+      {/* ✅ Use Header Component */}
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleReload={handleReload}
+        openProfile={() => setIsProfileModalOpen(true)}
+      />
 
       <Container sx={{ mt: 4 }}>
         {loading ? (
@@ -142,11 +128,8 @@ const App = () => {
         <ReelForm setReels={setReels} closeModal={() => setIsModalOpen(false)} />
       </Modal>
 
-      {/* Profile Modal */}
-      <Modal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)}>
-        <Typography variant="h6">Profile</Typography>
-        <button onClick={handleLogout}>Logout</button>
-      </Modal>
+      {/* ✅ Use new ProfileModal Component */}
+      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} handleLogout={handleLogout} />
     </Box>
   );
 };
