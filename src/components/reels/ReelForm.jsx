@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { fetchReels, insertReel, insertCollection, insertTag } from "../../utils/supabaseHelpers";
+import { fetchReels, insertReelWithTags, insertCollection, fetchTags } from "../../utils/supabaseHelpers";
 import { supabase } from "../../config/supabase";
-import { TextField, Button, MenuItem, Select, InputLabel, FormControl, Box, Typography, IconButton } from "@mui/material";
+import {
+  TextField,
+  Button,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Box,
+  Typography,
+  IconButton,
+} from "@mui/material";
 import { FaPlus } from "react-icons/fa";
 
 const ReelForm = ({ setReels, closeModal }) => {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
-  const [collections, setCollections] = useState([]); // ✅ Ensure it's always an array
+  const [collections, setCollections] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState("");
   const [newCollection, setNewCollection] = useState("");
   const [tags, setTags] = useState([]);
@@ -35,16 +45,8 @@ const ReelForm = ({ setReels, closeModal }) => {
       }
 
       // ✅ Fetch Tags
-      const { data: tagsData, error: tagsError } = await supabase
-        .from("tags")
-        .select("id, name")
-        .eq("user_id", userData.user.id);
-
-      if (tagsError) {
-        console.error("Error fetching tags:", tagsError);
-      } else {
-        setTags(tagsData || []);
-      }
+      const fetchedTags = await fetchTags();
+      setTags(fetchedTags);
     };
 
     fetchCollectionsAndTags();
@@ -71,20 +73,20 @@ const ReelForm = ({ setReels, closeModal }) => {
       setIsCreatingCollection(false);
     }
 
-    let tagIds = [...selectedTags];
+    // ✅ Convert selected tag IDs to tag names
+    let tagNames = selectedTags.map((tagId) => tags.find((tag) => tag.id === tagId)?.name);
 
     if (newTag.trim()) {
-      const newTagId = await insertTag(newTag, userId);
-      tagIds.push(newTagId);
-      setTags((prev) => [...prev, { id: newTagId, name: newTag }]);
-      setNewTag("");
-      setIsCreatingTag(false);
+      tagNames.push(newTag.trim());
     }
 
     try {
-      const newReel = await insertReel({ url, title, collection_id, user_id: userId });
-      const updatedReels = await fetchReels();
-      setReels(updatedReels);
+      const newReel = await insertReelWithTags(
+        { url, title, collection_id, user_id: userId },
+        tagNames
+      );
+
+      setReels((prev) => [newReel, ...prev]);
       closeModal();
     } catch (error) {
       alert(error.message);
@@ -107,12 +109,12 @@ const ReelForm = ({ setReels, closeModal }) => {
           <Select value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
             {collections.length > 0 ? (
               collections.map((col) => (
-                <MenuItem key={`collection-${col.id}`} value={col.id}> {/* ✅ Unique key */}
+                <MenuItem key={`collection-${col.id}`} value={col.id}>
                   {col.name || "Unnamed Collection"}
                 </MenuItem>
               ))
             ) : (
-              <MenuItem disabled key="no-collections">No Collections Found</MenuItem>
+              <MenuItem disabled>No Collections Found</MenuItem>
             )}
           </Select>
         </FormControl>
@@ -139,12 +141,12 @@ const ReelForm = ({ setReels, closeModal }) => {
           >
             {tags.length > 0 ? (
               tags.map((tag) => (
-                <MenuItem key={`tag-${tag.id}`} value={tag.id}> {/* ✅ Unique key */}
+                <MenuItem key={`tag-${tag.id}`} value={tag.id}>
                   {tag.name || "Unnamed Tag"}
                 </MenuItem>
               ))
             ) : (
-              <MenuItem disabled key="no-tags">No Tags Found</MenuItem>
+              <MenuItem disabled>No Tags Found</MenuItem>
             )}
           </Select>
         </FormControl>
