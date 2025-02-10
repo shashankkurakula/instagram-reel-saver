@@ -4,9 +4,10 @@ import { supabase } from "./config/supabase";
 import Auth from "./components/Auth";
 import ReelForm from "./components/reels/ReelForm";
 import ReelList from "./components/reels/ReelList";
-import Header from "./components/common/Header"; 
+import Header from "./components/common/Header";
 import Modal from "./components/common/Modal";
-import ProfileModal from "./components/common/ProfileModal"; // ✅ Import new ProfileModal
+import SortFilterView from "./components/common/SortFilterView";
+import ProfileModal from "./components/common/ProfileModal";
 import { Box, Container, CircularProgress, IconButton } from "@mui/material";
 import { Add } from "@mui/icons-material";
 
@@ -15,6 +16,7 @@ const App = () => {
   const [allReels, setAllReels] = useState([]);
   const [reels, setReels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("date");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -105,13 +107,16 @@ const App = () => {
         openProfile={() => setIsProfileModalOpen(true)}
       />
 
+      {/* ✅ Sort, Filter, View Toggle UI */}
+      <SortFilterView setSortOption={setSortOption} />
+
       <Container sx={{ mt: 4 }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <ReelList reels={reels} setReels={setReels} />
+          <ReelList reels={reels} setReels={setReels} sortOption={sortOption} />
         )}
       </Container>
 
